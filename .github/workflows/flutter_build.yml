@@ -22,6 +22,7 @@ jobs:
           fi
           echo "Found project at: $PROJECT_DIR"
           cd "$PROJECT_DIR"
+          flutter create . --platforms android
           flutter pub get
           flutter build apk --release
           
