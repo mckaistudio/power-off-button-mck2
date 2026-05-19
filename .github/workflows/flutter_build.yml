@@ -1,0 +1,32 @@
+name: Flutter Build
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Find Project Root
+        id: find_root
+        run: |
+          # Yeh script dhoondegi ke pubspec.yaml kahan hai
+          PROJECT_ROOT=$(find . -name "pubspec.yaml" -exec dirname {} \; | head -n 1)
+          echo "PROJECT_ROOT=$PROJECT_ROOT" >> $GITHUB_ENV
+          echo "Found project root at: $PROJECT_ROOT"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+          
+      - name: Build Flutter App
+        run: |
+          cd $PROJECT_ROOT
+          flutter pub get
+          flutter build apk --release
+          
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-apk
+          path: "**/build/app/outputs/flutter-apk/app-release.apk"
