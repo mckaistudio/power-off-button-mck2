@@ -7,26 +7,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Find Project Root
-        id: find_root
-        run: |
-          # Yeh script dhoondegi ke pubspec.yaml kahan hai
-          PROJECT_ROOT=$(find . -name "pubspec.yaml" -exec dirname {} \; | head -n 1)
-          echo "PROJECT_ROOT=$PROJECT_ROOT" >> $GITHUB_ENV
-          echo "Found project root at: $PROJECT_ROOT"
-
+      - name: Debug - List Files
+        run: ls -R  # Yeh step humein batayega file kahan hai
+      
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.x'
           
-      - name: Build Flutter App
+      - name: Build and Locate Project
         run: |
-          cd $PROJECT_ROOT
+          # Dhoondo pubspec.yaml kahan hai
+          PROJECT_DIR=$(find . -name "pubspec.yaml" -exec dirname {} \; | head -n 1)
+          echo "Found project at: $PROJECT_DIR"
+          cd "$PROJECT_DIR"
           flutter pub get
           flutter build apk --release
-          
+          # APK ko root mein copy karo taake upload ho sake
+          cp build/app/outputs/flutter-apk/app-release.apk ../app-release.apk
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
-          path: "**/build/app/outputs/flutter-apk/app-release.apk"
+          path: app-release.apk
