@@ -15,12 +15,17 @@ class MainActivity: FlutterActivity() {
         
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             if (call.method == "showPowerMenu") {
-                // Android OS security bypass nahi ho sakti. 
-                // Global Action ke liye Accessibility required hai.
-                // Redirecting user to Accessibility Settings natively.
-                val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-                startActivity(intent)
-                result.success(null)
+                val service = MyAccessibilityService.instance
+                if (service != null) {
+                    // Trigger the global power dialog
+                    service.performGlobalAction(android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_POWER_DIALOG)
+                    result.success(true)
+                } else {
+                    // Redirecting user to Accessibility Settings natively.
+                    val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                    startActivity(intent)
+                    result.success(false)
+                }
             } else {
                 result.notImplemented()
             }
